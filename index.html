@@ -1,0 +1,1253 @@
+﻿<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Német gyakorló</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Segoe UI, sans-serif;
+            max-width: 1000px;
+            margin: auto;
+            padding: 20px;
+            background: #0f1115;
+            color: #e0e0e0;
+        }
+
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,.1);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 18px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 18px;
+            background: #2d6cdf;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #4b82ea;
+            }
+
+        .word {
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+         .correct{
+             background:#1f4d2d !important;
+             color:#ffffff !important;
+             border-color:#3fb950 !important;
+         }
+
+         .partial{
+             background:#5f4b00 !important;
+             color:#ffffff !important;
+             border-color:#d29922 !important;
+         }
+
+         .wrong{
+             background:#5c2121 !important;
+             color:#ffffff !important;
+             border-color:#f85149 !important;
+         }
+
+        .result {
+            font-size: 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .menu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+            .menu button {
+                flex: 1;
+                min-width: 150px;
+            }
+
+                .menu button.active {
+                    background: #4caf50;
+                    box-shadow: 0 0 15px rgba(76,175,80,.5);
+                }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #practiceOptions {
+            padding: 15px;
+        }
+
+        .checkline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+         .checkline input {
+             width:auto;
+             margin:0;
+             transform:translateY(2px);
+         }
+
+        .rangeRow {
+            display: flex;
+            gap: 15px;
+        }
+
+            .rangeRow > div {
+                width: 120px;
+            }
+
+            .rangeRow input {
+                width: 100%;
+            }
+            
+         .topBar {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 10px;
+         }
+
+         .jumpBox {
+             display: flex;
+             gap: 5px;
+             margin-top: 12px;
+         }
+
+         .jumpBox input {
+             width: 60px;
+             margin: 0;
+             padding: 6px;
+             font-size: 14px;
+             text-align: center;
+         }
+
+         .jumpBox button {
+             width: 60px;
+             margin: 0;
+             padding: 6px;
+             font-size: 14px;
+         }
+
+         .wordCounter {
+             color: #888;
+             font-size: 14px;
+         }
+         
+         .verbTopRow {
+             display: flex;
+             justify-content: space-between;
+             align-items: flex-start;
+             margin-bottom: 20px;
+         }
+
+         .verbInfo {
+             display: flex;
+             flex-direction: column;
+             align-items: flex-end;
+             gap: 8px;
+         }
+    </style>
+</head>
+<body>
+    <h1>MegaSzótár2000</h1>
+    <div class="menu">
+        <button id="btnHu2De" onclick="showPage('hu2de')">
+            🇭🇺→🇩🇪
+        </button>
+        <button id="btnDe2Hu" onclick="showPage('de2hu')">
+            🇩🇪→🇭🇺
+        </button>
+        <button id="btnVerbs" onclick="showPage('verbs')">
+            📚 Múlt idő
+        </button>
+        <button id="btnSettings" onclick="showPage('settings')">
+            ⚙️ Beállítások
+        </button>
+    </div>
+    <details id="practiceSettings">
+        <summary>
+            ⚙️ Gyakorlási beállítások
+        </summary>
+        <label class="checkline">
+            <input type="checkbox" id="randomMode" checked onchange="modeChanged()"> Véletlenszerű
+        </label>
+        <div class="rangeRow">
+            <div>
+                <label>Tól</label>
+                <input
+                    type="number"
+                    id="startRow"
+                    onchange="validateRange()">
+            </div>
+            <div>
+                <label>Ig</label>
+                <input
+                    type="number"
+                    id="endRow"
+                    onchange="validateRange()">
+            </div>
+        </div>
+    </details>
+    <div id="pageHeader" style="
+        text-align:center;
+        font-size:24px;
+        margin-bottom:20px;
+        font-weight:bold;">
+    </div>
+    <div id="settings" class="page card" style="display:none">
+        <input id="apiUrl" placeholder="Google Apps Script URL">
+        <button onclick="saveUrl()">
+            Mentés
+        </button>
+        <button onclick="refreshWords()">
+            Szótár frissítése
+        </button>
+    </div>
+    <div id="hu2de" class="page card" style="display:none">
+        <div id="wordNumber" style="
+           text-align:right;
+           color:#888;
+           font-size:14px;">
+        </div>
+         <div class="topBar">
+
+             <div id="wordNumber" class="wordCounter">
+             </div>
+
+             <div class="jumpBox">
+                 <input id="jumpIdHu2De"
+                        type="number"
+                        placeholder="ID">
+                 <button onclick="jumpToHu2De()">→</button>
+             </div>
+
+         </div>
+        <div id="question" class="word">
+            Töltsd be a szótárat
+        </div>
+        <input id="answer" autocomplete="off" placeholder="Német szó">
+        <button onclick="nextWord()">
+            Következő szó
+        </button>
+        <button onclick="giveHint()">
+             💡 Kérek egy betűt
+        </button>
+        <button onclick="checkAnswer()">
+            Ellenőrzés
+        </button>
+        <div id="hint"
+              style="
+                 text-align:center;
+                 color:#ffd54f;
+                 font-size:24px;
+                 margin-top:15px;">
+         </div>
+        <div id="result" class="result"></div>
+    </div>
+    <div id="de2hu" class="page card" style="display:none">
+        <div id="wordNumberDeHu" style="
+        text-align:right;
+        color:#888;
+        font-size:14px;">
+        </div>
+         <div class="topBar">
+
+             <div id="wordNumberDeHu" class="wordCounter">
+             </div>
+
+             <div class="jumpBox">
+                 <input id="jumpIdDe2Hu"
+                        type="number"
+                        placeholder="ID">
+                 <button onclick="jumpToDe2Hu()">→</button>
+             </div>
+
+         </div>
+        <div id="questionDeHu" class="word">
+        </div>
+        <input id="answerDeHu" autocomplete="off" placeholder="Magyar szó">
+        <button onclick="nextWordDeHu()">
+            Következő szó
+        </button>
+        <button onclick="giveHintDeHu()">
+             💡 Kérek egy betűt
+        </button>
+        <button onclick="checkAnswerDeHu()">
+            Ellenőrzés
+        </button>
+        <div id="hintDeHu"
+              style="
+                 text-align:center;
+                 color:#ffd54f;
+                 font-size:24px;
+                 margin-top:15px;">
+         </div>
+        <div id="resultDeHu" class="result"></div>
+    </div>
+   <div id="verbs" class="page card" style="display:none">
+
+         <div class="verbTopRow">
+
+             <div class="verbSettings">
+
+                 <label class="checkline">
+                     <input
+                         type="checkbox"
+                         id="verbRandomMode"
+                         checked
+                         onchange="verbDeck=[];">
+                     Véletlenszerű
+                 </label>
+
+                 <div class="rangeRow">
+
+                     <div>
+                         <label>Tól</label>
+                         <input
+                           type="number"
+                           id="verbStartRow"
+                           onchange="verbDeck=[];">
+                     </div>
+
+                     <div>
+                         <label>Ig</label>
+                         <input
+                           type="number"
+                           id="verbEndRow"
+                           onchange="verbDeck=[];">
+                     </div>
+
+                 </div>
+
+             </div>
+
+             <div class="verbInfo">
+
+                 <div id="verbNumber" class="wordCounter">
+                 </div>
+
+                 <div class="jumpBox">
+                     <input
+                         id="jumpIdVerb"
+                         type="number"
+                         placeholder="ID">
+                     <button onclick="jumpToVerb()">→</button>
+                 </div>
+
+             </div>
+
+         </div>
+
+       <div id="verbQuestion" class="word">
+       </div>
+
+       <input
+           id="verbPraesens"
+           placeholder="Präsens">
+           
+       <div id="verbPraesensResult"
+         style="margin-top:5px;color:#f85149;">
+       </div>
+
+       <input
+           id="verbPraeteritum"
+           placeholder="Präteritum">
+           
+       <div id="verbPraeteritumResult"
+         style="margin-top:5px;color:#f85149;">
+       </div>
+
+       <input
+           id="verbPerfekt"
+           placeholder="Perfekt">
+           
+      <div id="verbPerfektResult"
+           style="margin-top:5px;color:#f85149;">
+      </div>
+
+       <button onclick="nextVerb()">
+           Következő ige
+       </button>
+       <button onclick="checkVerb()">
+           Ellenőrzés
+       </button>
+       <div id="verbResult"
+            class="result">
+       </div>
+
+   </div>
+    <script>
+
+let words = JSON.parse(localStorage.getItem("words") || "[]");
+
+let deck = [];
+let current = null;
+
+let currentDeHu = null;
+let deckDeHu = [];
+
+let hintLevel = 0;
+let hintLevelDeHu = 0;
+
+let verbs = [];
+let verbDeck = [];
+let currentVerb = null;
+
+let verbStart = 0;
+let verbEnd = 0;
+
+document.getElementById("apiUrl").value =
+localStorage.getItem("apiUrl") || "";
+
+function saveUrl(){
+
+    localStorage.setItem(
+        "apiUrl",
+        document.getElementById("apiUrl").value
+    );
+
+    alert("Mentve");
+}
+
+async function refreshWords(){
+
+    const url =
+        document.getElementById("apiUrl").value.trim();
+
+    if(!url){
+        alert("Adj meg API URL-t!");
+        return;
+    }
+
+    try{
+
+        console.log("API:", url);
+
+        const response = await fetch(url);
+
+        if(!response.ok){
+            throw new Error(
+                "HTTP error: " + response.status
+            );
+        }
+
+        const loaded =
+            await response.json();
+
+        words = loaded;
+
+         buildVerbList();
+
+        localStorage.setItem(
+            "words",
+            JSON.stringify(words)
+        );
+
+        alert(
+            words.length +
+            " szó importálva"
+        );
+
+        updateRangeLimits();
+        buildDeck();
+        buildDeckDeHu();
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "Nem sikerült letölteni:\n" +
+            err.message
+        );
+    }
+    
+    verbs = words.filter(item =>
+    item.verbHu &&
+    item.praesens &&
+    item.praeteritum &&
+    item.perfekt
+);
+}
+
+function shuffle(array){
+
+    for(let i=array.length-1;i>0;i--){
+
+        const j =
+            Math.floor(
+                Math.random()*(i+1)
+            );
+
+        [array[i],array[j]] =
+        [array[j],array[i]];
+
+    }
+
+    return array;
+}
+
+function buildDeck(){
+
+    deck = [];
+
+    const range =
+        getRangeIndexes();
+
+
+
+    for(let i = range.start; i <= range.end; i++ )
+    {
+      deck.push(i);
+    }
+
+    if( document.getElementById("randomMode") .checked ){ shuffle(deck); } }
+
+function buildDeckDeHu(){
+      deckDeHu=[];
+
+      const range=getRangeIndexes();
+
+      for( let i=range.start; i<=range.end; i++ )
+         { deckDeHu.push(i);
+      }
+
+      if( document.getElementById("randomMode") .checked ){ shuffle(deckDeHu); } }
+
+function nextWord(){
+
+    if(words.length === 0){
+
+        document.getElementById("question")
+            .innerText = "Nincs betöltött szótár";
+
+        return;
+    }
+
+    if(deck.length === 0){
+        buildDeck();
+    }
+
+    const idx = document.getElementById("randomMode").checked
+    ? deck.pop()
+    : deck.shift();
+
+    if(idx === undefined){
+        return;
+    }
+
+    const range = getRangeIndexes();
+
+    document.getElementById("wordNumber")
+        .innerText =
+         "#" + (idx + 1) +
+         "   [" +
+         (range.start + 1) +
+         "-" +
+         (range.end + 1) +
+         "]";
+
+    current = words[idx];
+
+    document.getElementById("question")
+        .innerText = current.hu;
+
+    document.getElementById("answer").value = "";
+    document.getElementById("answer").className = "";
+    const result =
+    document.getElementById("result");
+
+    result.innerText = "";
+    result.className = "result";
+
+    document.getElementById("answer").focus();
+    
+    hintLevel = 0;
+
+   document.getElementById("hint")
+       .innerText = "";
+}
+
+function nextWordDeHu(){
+
+    if(words.length === 0){
+
+        document.getElementById("questionDeHu")
+            .innerText = "Nincs betöltött szótár";
+
+        return;
+    }
+
+    if(deckDeHu.length === 0){
+        buildDeckDeHu();
+    }
+
+      const idx = document.getElementById("randomMode").checked
+          ? deckDeHu.pop()
+          : deckDeHu.shift();
+
+      if(idx === undefined){
+          return;
+      }
+
+    const range = getRangeIndexes();
+
+    document.getElementById("wordNumberDeHu")
+        .innerText =
+        "#" + (idx + 1) +
+        "   [" +
+        (range.start + 1) +
+        "-" +
+        (range.end + 1) +
+        "]";
+
+    currentDeHu = words[idx];
+
+    document.getElementById("questionDeHu")
+        .innerText = currentDeHu.de;
+
+    document.getElementById("answerDeHu")
+        .value = "";
+
+    document.getElementById("answerDeHu")
+        .className = "";
+
+    const result =
+    document.getElementById("resultDeHu");
+
+    result.innerText = "";
+    result.className = "result";
+
+    document.getElementById("answerDeHu")
+        .focus();
+        
+      hintLevelDeHu = 0;
+
+      document.getElementById("hintDeHu")
+          .innerText = "";
+
+}
+
+
+function checkAnswer(){
+
+    if(!current)
+        return;
+
+    const input =
+        document.getElementById("answer");
+
+    const result =
+        document.getElementById("result");
+
+    const answer =
+        input.value.trim();
+
+    const correct =
+        String(current.de || "").trim();
+
+    let css = "wrong";
+
+    if(answer === correct){
+
+        css = "correct";
+
+    }else if(
+        answer.toLowerCase() ===
+        correct.toLowerCase()
+    ){
+
+        css = "partial";
+    }
+
+    input.className = css;
+
+    result.innerText = correct;
+    result.className = "result " + css;
+}
+
+function checkAnswerDeHu(){
+
+    if(!currentDeHu)
+        return;
+
+    const input =
+        document.getElementById("answerDeHu");
+
+    const result =
+        document.getElementById("resultDeHu");
+
+    const answer =
+        input.value.trim();
+
+    const correct =
+        String(currentDeHu.hu || "").trim();
+
+    let css = "wrong";
+
+    if(answer === correct){
+
+        css = "correct";
+
+    }else if(
+        answer.toLowerCase() ===
+        correct.toLowerCase()
+    ){
+
+        css = "partial";
+    }
+
+    input.className = css;
+
+    result.innerText = correct;
+    result.className = "result " + css;
+}
+
+document
+    .getElementById("answer")
+    .addEventListener(
+        "keypress",
+        function(e){
+
+            if(e.key === "Enter"){
+                checkAnswer();
+            }
+        }
+    );
+
+document
+    .getElementById("answerDeHu")
+    .addEventListener(
+        "keypress",
+        function(e){
+
+            if(e.key === "Enter"){
+                checkAnswerDeHu();
+            }
+        }
+    );
+function showPage(pageId){ document .querySelectorAll(".menu button") .forEach(b=>b.classList.remove("active"));
+
+   const settingsPanel =
+    document.getElementById("practiceSettings");
+
+   if(pageId === "verbs" || pageId === "settings"){
+
+       settingsPanel.style.display = "none";
+
+   }else{
+
+       settingsPanel.style.display = "block";
+   }
+
+    document
+        .querySelectorAll(".page")
+        .forEach(page =>
+            page.style.display = "none"
+        );
+
+    document
+        .getElementById(pageId)
+        .style.display = "block";
+
+    const titles = {
+
+        hu2de : "🇭🇺 → 🇩🇪",
+        de2hu : "🇩🇪 → 🇭🇺",
+        verbs : "📚 Múlt idő",
+        settings : "⚙️ Beállítások"
+
+    };
+
+    document
+        .getElementById("pageHeader")
+        .innerText =
+        titles[pageId];
+
+    const buttonMap = {
+
+        hu2de : "btnHu2De",
+        de2hu : "btnDe2Hu",
+        verbs : "btnVerbs",
+        settings : "btnSettings"
+    };
+
+    document
+        .getElementById(buttonMap[pageId])
+        .classList.add("active");
+
+    if(pageId === "hu2de"){
+        nextWord();
+    }
+
+    if(pageId === "de2hu"){
+        nextWordDeHu();
+    }
+    
+    if(pageId === "verbs"){
+         nextVerb();
+    }
+}
+
+function getRangeIndexes(){
+
+    let start =
+        Number(
+            document.getElementById("startRow").value
+        ) - 1;
+
+    let end =
+        Number(
+            document.getElementById("endRow").value
+        ) - 1;
+
+    if(start < 0){
+        start = 0;
+    }
+
+    if(end >= words.length){
+        end = words.length - 1;
+    }
+
+    return {
+        start,
+        end
+    };
+}
+
+function updateRangeLimits(){
+
+    if(words.length === 0)
+        return;
+
+    const minId = 1;
+    const maxId = words.length;
+
+    const startInput =
+        document.getElementById("startRow");
+
+    const endInput =
+        document.getElementById("endRow");
+
+    startInput.min = minId;
+    startInput.max = maxId;
+
+    endInput.min = minId;
+    endInput.max = maxId;
+
+    startInput.value = minId;
+    endInput.value = maxId;
+}
+
+function validateRange(){
+
+    const maxId = words.length;
+
+    let start =
+        Number(
+            document.getElementById("startRow").value
+        );
+
+    let end =
+        Number(
+            document.getElementById("endRow").value
+        );
+
+    start = Math.max(1, start);
+    start = Math.min(maxId, start);
+
+    end = Math.max(1, end);
+    end = Math.min(maxId, end);
+
+    if(start > end){
+
+        end = start;
+    }
+
+    document.getElementById("startRow").value =
+        start;
+
+    document.getElementById("endRow").value =
+        end;
+        
+    deck = [];
+    deckDeHu = [];
+}
+
+function modeChanged(){
+
+    deck = [];
+    deckDeHu = [];
+
+}
+
+function giveHint(){
+
+    if(!current)
+        return;
+
+    const correct =
+        String(current.de || "");
+
+    if(hintLevel < correct.length){
+
+        hintLevel++;
+
+        document.getElementById("hint")
+            .innerText =
+            correct.substring(0, hintLevel);
+    }
+}
+
+function giveHintDeHu(){
+
+    if(!currentDeHu)
+        return;
+
+    const correct =
+        String(currentDeHu.hu || "");
+
+    if(hintLevelDeHu < correct.length){
+
+        hintLevelDeHu++;
+
+        document.getElementById("hintDeHu")
+            .innerText =
+            correct.substring(
+                0,
+                hintLevelDeHu
+            );
+    }
+}
+
+if(words.length > 0){
+
+    buildVerbList();
+      
+    updateRangeLimits();
+
+    buildDeck();
+    buildDeckDeHu();
+
+    nextWord();
+}
+
+function buildVerbDeck(){
+
+    verbDeck = [];
+
+    const range =
+        getVerbRange();
+
+    for(
+        let i = range.start;
+        i <= range.end;
+        i++
+    ){
+        verbDeck.push(i);
+    }
+
+    if(
+        document.getElementById("verbRandomMode")
+        .checked
+    ){
+        shuffle(verbDeck);
+    }
+}
+
+function nextVerb(){
+
+    if(verbs.length === 0){
+        return;
+    }
+
+    if(verbDeck.length === 0){
+        buildVerbDeck();
+    }
+
+    const idx =
+        document.getElementById("verbRandomMode").checked
+        ? verbDeck.pop()
+        : verbDeck.shift();
+
+    currentVerb = verbs[idx];
+    
+    document.getElementById("verbNumber")
+    .innerText =
+    "#" + (idx + 1) +
+    " [" +
+    (Number(document.getElementById("verbStartRow").value)) +
+    "-" +
+    (Number(document.getElementById("verbEndRow").value)) +
+    "]";
+
+    document.getElementById("verbQuestion")
+        .innerText =
+        currentVerb.verbHu;
+
+    document.getElementById("verbPraesens").value = "";
+    document.getElementById("verbPraeteritum").value = "";
+    document.getElementById("verbPerfekt").value = "";
+              
+      document.getElementById("verbPraesens").className = "";
+      document.getElementById("verbPraeteritum").className = "";
+      document.getElementById("verbPerfekt").className = "";
+
+      document.getElementById("verbPraesensResult").innerText = "";
+      document.getElementById("verbPraeteritumResult").innerText = "";
+      document.getElementById("verbPerfektResult").innerText = "";
+}
+
+function checkVerb(){
+
+    checkVerbField(
+        "verbPraesens",
+        "verbPraesensResult",
+        currentVerb.praesens
+    );
+
+    checkVerbField(
+        "verbPraeteritum",
+        "verbPraeteritumResult",
+        currentVerb.praeteritum
+    );
+
+    checkVerbField(
+        "verbPerfekt",
+        "verbPerfektResult",
+        currentVerb.perfekt
+    );
+}
+
+[
+    "verbPraesens",
+    "verbPraeteritum",
+    "verbPerfekt"
+].forEach(id => {
+
+    document
+        .getElementById(id)
+        .addEventListener("keydown", function(e){
+
+         if(e.key === "Enter"){
+
+             if(
+                 document.getElementById("verbPraesens").value.trim() !== "" &&
+                 document.getElementById("verbPraeteritum").value.trim() !== "" &&
+                 document.getElementById("verbPerfekt").value.trim() !== ""
+             ){
+                 checkVerb();
+             }
+
+         }
+
+        });
+
+});
+
+function checkVerbField(
+    inputId,
+    resultId,
+    correctAnswer
+){
+
+    const input =
+        document.getElementById(inputId);
+
+    const result =
+        document.getElementById(resultId);
+
+    const answer =
+        input.value.trim();
+
+    const correct =
+        String(correctAnswer).trim();
+
+    let css = "wrong";
+
+    if(answer === correct){
+
+        css = "correct";
+        result.innerText = "";
+
+    }else if(
+        answer.toLowerCase() ===
+        correct.toLowerCase()
+    ){
+
+        css = "partial";
+        result.innerText = correct;
+
+    }else{
+
+        css = "wrong";
+        result.innerText = correct;
+    }
+
+    input.className = css;
+}
+
+function buildVerbList(){
+
+    verbs = words.filter(item =>
+        item.verbHu &&
+        item.praesens &&
+        item.praeteritum &&
+        item.perfekt
+    );
+    
+    document.getElementById("verbStartRow").value = 1;
+    document.getElementById("verbEndRow").value = verbs.length;
+}
+
+function getVerbRange(){
+
+    let start =
+        Number(
+            document.getElementById("verbStartRow").value
+        ) - 1;
+
+    let end =
+        Number(
+            document.getElementById("verbEndRow").value
+        ) - 1;
+
+    if(start < 0){
+        start = 0;
+    }
+
+    if(end >= verbs.length){
+        end = verbs.length - 1;
+    }
+
+    if(start > end){
+        start = end;
+    }
+
+    return {
+        start,
+        end
+    };
+}
+
+function jumpToHu2De() {
+
+    let id = Number(
+        document.getElementById("jumpIdHu2De").value
+    );
+
+    if (id < 1 || id > words.length) {
+        return;
+    }
+
+    current = words[id - 1];
+
+    document.getElementById("wordNumber").innerText =
+        "#" + id;
+
+    document.getElementById("question").innerText =
+        current.hu;
+
+    document.getElementById("answer").value = "";
+    document.getElementById("answer").className = "";
+    document.getElementById("result").innerText = "";
+    document.getElementById("hint").innerText = "";
+
+    hintLevel = 0;
+
+    document.getElementById("answer").focus();
+}
+
+function jumpToDe2Hu() {
+
+    let id = Number(
+        document.getElementById("jumpIdDe2Hu").value
+    );
+
+    if (id < 1 || id > words.length) {
+        return;
+    }
+
+    currentDeHu = words[id - 1];
+
+    document.getElementById("wordNumberDeHu").innerText =
+        "#" + id;
+
+    document.getElementById("questionDeHu").innerText =
+        currentDeHu.de;
+
+    document.getElementById("answerDeHu").value = "";
+    document.getElementById("answerDeHu").className = "";
+    document.getElementById("resultDeHu").innerText = "";
+    document.getElementById("hintDeHu").innerText = "";
+
+    hintLevelDeHu = 0;
+
+    document.getElementById("answerDeHu").focus();
+}
+
+function jumpToVerb() {
+
+    let id = Number(
+        document.getElementById("jumpIdVerb").value
+    );
+
+    if (id < 1 || id > verbs.length) {
+        return;
+    }
+
+    currentVerb = verbs[id - 1];
+
+    document.getElementById("verbNumber").innerText =
+        "#" + id;
+
+    document.getElementById("verbQuestion").innerText =
+        currentVerb.verbHu;
+
+    document.getElementById("verbPraesens").value = "";
+    document.getElementById("verbPraeteritum").value = "";
+    document.getElementById("verbPerfekt").value = "";
+
+    document.getElementById("verbResult").innerText = "";
+}
+
+</script>
+</body>
+</html>
