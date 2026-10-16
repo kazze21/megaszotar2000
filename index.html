@@ -16,6 +16,7 @@
             padding: 20px;
             background: #0f1115;
             color: #e0e0e0;
+            padding-bottom: 90px;
         }
 
         .card {
@@ -41,9 +42,9 @@
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             margin-top: 10px;
-            font-size: 18px;
+            font-size: 16px;
             background: #2d6cdf;
             color: white;
             border: none;
@@ -55,10 +56,10 @@
             }
 
         .word {
-            font-size: 48px;
+            font-size: 32px;
             font-weight: 700;
             text-align: center;
-            margin: 40px 0;
+            margin: 25px 0;
         }
 
          .correct{
@@ -85,12 +86,20 @@
             margin-top: 20px;
         }
 
-        .menu {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+         .menu {
+             position: fixed;
+             bottom: 0;
+             left: 0;
+             right: 0;
+
+             background: #1a1a1a;
+
+             padding: 8px;
+             z-index: 1000;
+
+             display: flex;
+             gap: 5px;
+         }
 
             .menu button {
                 flex: 1;
@@ -101,11 +110,6 @@
                     background: #4caf50;
                     box-shadow: 0 0 15px rgba(76,175,80,.5);
                 }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
 
         #practiceOptions {
             padding: 15px;
@@ -186,7 +190,6 @@
     </style>
 </head>
 <body>
-    <h1>MegaSzótár2000</h1>
     <div class="menu">
         <button id="btnHu2De" onclick="showPage('hu2de')">
             🇭🇺→🇩🇪
@@ -436,6 +439,63 @@ let verbEnd = 0;
 document.getElementById("apiUrl").value =
 localStorage.getItem("apiUrl") || "";
 
+function levenshtein(a, b) {
+
+    a = a.toLowerCase().trim();
+    b = b.toLowerCase().trim();
+
+    const matrix = [];
+
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= b.length; i++) {
+
+        for (let j = 1; j <= a.length; j++) {
+
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+
+                matrix[i][j] = matrix[i - 1][j - 1];
+
+            } else {
+
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+function similarityPercent(a, b) {
+
+    if (!a.length && !b.length) {
+        return 100;
+    }
+
+    const distance = levenshtein(a, b);
+
+    const maxLen = Math.max(
+        a.length,
+        b.length
+    );
+
+    return (
+        (maxLen - distance) /
+        maxLen
+    ) * 100;
+}
+
+
 function saveUrl(){
 
     localStorage.setItem(
@@ -683,19 +743,29 @@ function checkAnswer(){
     const correct =
         String(current.de || "").trim();
 
-    let css = "wrong";
+      const similarity =
+          similarityPercent(
+              answer,
+              correct
+          );
 
-    if(answer === correct){
+      let css = "wrong";
 
-        css = "correct";
+      if (similarity >= 100) {
 
-    }else if(
-        answer.toLowerCase() ===
-        correct.toLowerCase()
-    ){
+          css = "correct";
 
-        css = "partial";
-    }
+      }
+      else if (similarity >= 80) {
+
+          css = "partial";
+
+      }
+      else {
+
+          css = "wrong";
+
+      }
 
     input.className = css;
 
@@ -720,19 +790,29 @@ function checkAnswerDeHu(){
     const correct =
         String(currentDeHu.hu || "").trim();
 
-    let css = "wrong";
+      const similarity =
+          similarityPercent(
+              answer,
+              correct
+          );
 
-    if(answer === correct){
+      let css = "wrong";
 
-        css = "correct";
+      if (similarity >= 100) {
 
-    }else if(
-        answer.toLowerCase() ===
-        correct.toLowerCase()
-    ){
+          css = "correct";
 
-        css = "partial";
-    }
+      }
+      else if (similarity >= 80) {
+
+          css = "partial";
+
+      }
+      else {
+
+          css = "wrong";
+
+      }
 
     input.className = css;
 
@@ -1124,26 +1204,29 @@ function checkVerbField(
     const correct =
         String(correctAnswer).trim();
 
-    let css = "wrong";
+      const similarity =
+          similarityPercent(
+              answer,
+              correct
+          );
 
-    if(answer === correct){
+      let css = "wrong";
 
-        css = "correct";
-        result.innerText = "";
+      if (similarity >= 100) {
 
-    }else if(
-        answer.toLowerCase() ===
-        correct.toLowerCase()
-    ){
+          css = "correct";
 
-        css = "partial";
-        result.innerText = correct;
+      }
+      else if (similarity >= 80) {
 
-    }else{
+          css = "partial";
 
-        css = "wrong";
-        result.innerText = correct;
-    }
+      }
+      else {
+
+          css = "wrong";
+
+      }
 
     input.className = css;
 }
