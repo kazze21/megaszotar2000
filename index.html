@@ -380,6 +380,14 @@
 
        <div id="verbQuestion" class="word">
        </div>
+       
+       <div id="verbHint"
+           style="
+              text-align:center;
+              color:#ffd54f;
+              font-size:24px;
+              margin-bottom:15px;">
+      </div>
 
        <input
            id="verbPraesens"
@@ -408,6 +416,9 @@
        <button onclick="nextVerb()">
            Következő ige
        </button>
+       <button onclick="giveVerbHint()">
+         💡 Segítség
+      </button>
        <button onclick="checkVerb()">
            Ellenőrzés
        </button>
@@ -435,6 +446,8 @@ let currentVerb = null;
 
 let verbStart = 0;
 let verbEnd = 0;
+
+let verbHintLevel = 0;
 
 document.getElementById("apiUrl").value =
 localStorage.getItem("apiUrl") || "";
@@ -1137,6 +1150,10 @@ function nextVerb(){
       document.getElementById("verbPraesensResult").innerText = "";
       document.getElementById("verbPraeteritumResult").innerText = "";
       document.getElementById("verbPerfektResult").innerText = "";
+      
+      verbHintLevel = 0;
+
+      document.getElementById("verbHint").innerText = "";
 }
 
 function checkVerb(){
@@ -1230,10 +1247,10 @@ function checkVerbField(
 
     input.className = css;
     
-    result.innerText =
-    css === "wrong"
-        ? correct
-        : "";
+   result.innerText =
+    css === "correct"
+        ? ""
+        : correct;
 }
 
 function buildVerbList(){
@@ -1358,6 +1375,42 @@ function jumpToVerb() {
     document.getElementById("verbPerfekt").value = "";
 
     document.getElementById("verbResult").innerText = "";
+    
+    verbHintLevel = 0;
+
+   document.getElementById("verbHint").innerText = "";
+}
+
+function giveVerbHint() {
+
+    if (!currentVerb) {
+        return;
+    }
+
+    const correct =
+        String(currentVerb.praesens || "");
+
+    if (verbHintLevel < correct.length) {
+        verbHintLevel++;
+    }
+
+    let hint = "";
+
+    for (let i = 0; i < correct.length; i++) {
+
+        if (correct[i] === " ") {
+            hint += " ";
+        }
+        else if (i < verbHintLevel) {
+            hint += correct[i];
+        }
+        else {
+            hint += "*";
+        }
+    }
+
+    document.getElementById("verbHint")
+        .innerText = hint;
 }
 
 </script>
