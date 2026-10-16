@@ -927,13 +927,26 @@ function giveHint(){
         String(current.de || "");
 
     if(hintLevel < correct.length){
-
         hintLevel++;
-
-        document.getElementById("hint")
-            .innerText =
-            correct.substring(0, hintLevel);
     }
+
+    let hint = "";
+
+    for(let i = 0; i < correct.length; i++){
+
+        if(correct[i] === " "){
+            hint += " ";
+        }
+        else if(i < hintLevel){
+            hint += correct[i];
+        }
+        else{
+            hint += "*";
+        }
+
+    }
+
+    document.getElementById("hint").innerText = hint;
 }
 
 function giveHintDeHu(){
@@ -945,16 +958,27 @@ function giveHintDeHu(){
         String(currentDeHu.hu || "");
 
     if(hintLevelDeHu < correct.length){
-
         hintLevelDeHu++;
-
-        document.getElementById("hintDeHu")
-            .innerText =
-            correct.substring(
-                0,
-                hintLevelDeHu
-            );
     }
+
+    let hint = "";
+
+    for(let i = 0; i < correct.length; i++){
+
+        if(correct[i] === " "){
+            hint += " ";
+        }
+        else if(i < hintLevelDeHu){
+            hint += correct[i];
+        }
+        else{
+            hint += "*";
+        }
+
+    }
+
+    document.getElementById("hintDeHu")
+        .innerText = hint;
 }
 
 if(words.length > 0){
