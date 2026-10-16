@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Német gyakorló</title>
+    <title>MegaSzótár2000</title>
     <style>
         * {
             box-sizing: border-box;
@@ -1229,6 +1229,11 @@ function checkVerbField(
       }
 
     input.className = css;
+    
+    result.innerText =
+    css === "wrong"
+        ? correct
+        : "";
 }
 
 function buildVerbList(){
